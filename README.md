@@ -72,13 +72,13 @@ mkdir -p ${OUTPUT_DIR}
   ${QUERY_HMM} ${TARGET_FASTA}
 ```
 
-## Post-Processing Commands
+# Post-Processing Commands
 
-# Count total rRNAs
+## Count total rRNAs
 ```bash
 grep -c "euk.ssu.rnammer.degap" wheat_rrna_annotations.tbl
 ```
-# Count rRNAs per chromosome
+## Count rRNAs per chromosome
 ```bash
 awk '{count[$1]++} END {for (chr in count) print chr, count[chr]}' wheat_rrna_annotations.tbl
 ```
