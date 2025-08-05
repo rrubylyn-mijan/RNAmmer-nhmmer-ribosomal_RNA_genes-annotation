@@ -1,161 +1,129 @@
-\# rRNA Gene Annotation using RNAmmer and nhmmer
+# rRNA Gene Annotation using RNAmmer and nhmmer
 
-
-
-This workflow describes how to annotate ribosomal RNA genes from assembled wheat genomes using \*\*RNAmmer\*\* and \*\*nhmmer\*\* on HPC systems like \*\*Atlas\*\* or \*\*CCAST\*\*.
-
-
+This workflow describes how to annotate ribosomal RNA genes from assembled wheat genomes using **RNAmmer** and **nhmmer** on HPC systems like **Atlas** or **CCAST**.
 
 ---
 
+## Installation of RNAmmer
 
+1. **Request download link** from [RNAmmer website](https://services.healthtech.dtu.dk/cgi-bin/sw_request?software=rnammer&version=1.2&packageversion=1.2&platform=Unix)
 
-\## Installation of RNAmmer
+2. **Transfer the package to your HPC**:
+scp ~/Downloads/rnammer-1.2.Unix.tar.gz your_username@atlas-login.hpc.msstate.edu:/home/your_username
 
-
-
-1\. \*\*Request download link\*\* from \[RNAmmer website](https://services.healthtech.dtu.dk/cgi-bin/sw\_request?software=rnammer\&version=1.2\&packageversion=1.2\&platform=Unix).
-
-2\. \*\*Transfer the package to your HPC\*\*:
-
-```bash
-
-&nbsp;  scp ~/Downloads/rnammer-1.2.Unix.tar.gz your\_username@atlas-login.hpc.msstate.edu:/home/your\_username
-
-```
-
-3\. Extract the archive:
-
-```bash
-
+3. **Extract the archive**:
 tar -xzf rnammer-1.2.Unix.tar.gz
 
-```
-
-4\. Edit the rnammer script to update install path:
-
-```bash
-
+4. **Edit the rnammer script to update install path**:
 nano rnammer
 
-\# Change these lines:
+# Change these lines:
+my $INSTALL_PATH = "/90daydata/oat_renewal/Ruby/rnammer_envs";
+my $RNAMMER_CORE = "$INSTALL_PATH/core-rnammer";
 
-my $INSTALL\_PATH = "/directory/this/saved/rnammer\_envs";
+5. **Test the installation**:
+perl /90daydata/oat_renewal/Ruby/rnammer_envs/rnammer -S bac -m lsu,ssu,tsu -gff ecoli.fsa
 
-my $RNAMMER\_CORE = "$INSTALL\_PATH/core-rnammer";
-
-```
-
-5\. Test the installation
-
-```bash
-
-perl /directory/this/saved/rnammer\_envs/rnammer -S bac -m lsu,ssu,tsu -gff ecoli.fsa
-
-```
-
-6\. Directory Setup in HPC
-
-```bash
-
+6. **Create directory structure**:
 ssh atlas-login
+mkdir -p /90daydata/oat_renewal/Ruby/rnammer_envs
+mkdir -p /90daydata/oat_renewal/Ruby/rrna_results
 
-mkdir -p /directory/this/saved/rnammer\_envs
+---
 
-mkdir -p /directory/this/saved/rrna\_results
+## nhmmer-based rRNA Annotation
 
-```
+1. **Load HMMER module**:
+ml hmmer/3.4
 
+---
 
+## SLURM Job Script Examples
 
-\## nhmmer-based rRNA Annotation
-
-1\. Load HMMER module (adjust to your cluster):
-
-```bash
+### Sumai 3
+#!/bin/bash
+#SBATCH -N 1
+#SBATCH -n 8
+#SBATCH -p atlas
+#SBATCH --mem=100GB
+#SBATCH -J rrna_sumai3
+#SBATCH -A genolabswheatphg
 
 ml hmmer/3.4
 
-```
+QUERY_HMM=/90daydata/oat_renewal/Ruby/rnammer_envs/lib/euk.ssu.rnammer.hmm
+TARGET_FASTA=/90daydata/oat_renewal/Ruby/Sumai3_pm_v2.fasta
+OUTPUT_DIR=/90daydata/oat_renewal/Ruby/rrna_results
+OUTPUT_FILE=${OUTPUT_DIR}/sumai3_rrna_annotations.tbl
 
+mkdir -p ${OUTPUT_DIR}
 
-\## SLURM Scripts
+/apps/spack-managed/gcc-11.3.1/hmmer-3.4*/bin/nhmmer \
+  --tblout ${OUTPUT_FILE} \
+  --cpu 8 --dna \
+  ${QUERY_HMM} ${TARGET_FASTA}
 
-```bash
+---
 
-\#!/bin/bash
-
-\#SBATCH -N 1
-
-\#SBATCH -n 8
-
-\#SBATCH -p atlas
-
-\#SBATCH --mem=100GB
-
-\#SBATCH -J rrna\_sumai3
-
-\#SBATCH -A genolabswheatphg
-
-
+### Rollag
+#!/bin/bash
+#SBATCH -N 1
+#SBATCH -n 8
+#SBATCH -p atlas
+#SBATCH --mem=100GB
+#SBATCH -J rrna_rollag
+#SBATCH -A genolabswheatphg
 
 ml hmmer/3.4
 
+QUERY_HMM=/90daydata/oat_renewal/Ruby/rnammer_envs/lib/euk.ssu.rnammer.hmm
+TARGET_FASTA=/90daydata/oat_renewal/Ruby/Rollag_pm_v1.fasta
+OUTPUT_DIR=/90daydata/oat_renewal/Ruby/rrna_results
+OUTPUT_FILE=${OUTPUT_DIR}/rollag_rrna_annotations.tbl
 
+mkdir -p ${OUTPUT_DIR}
 
-QUERY\_HMM=/directory/this/saved/rnammer\_envs/lib/euk.ssu.rnammer.hmm
+/apps/spack-managed/gcc-11.3.1/hmmer-3.4*/bin/nhmmer \
+  --tblout ${OUTPUT_FILE} \
+  --cpu 8 --dna \
+  ${QUERY_HMM} ${TARGET_FASTA}
 
-TARGET\_FASTA=/directory/this/saved/Sumai3\_pm\_v2.fasta
+---
 
-OUTPUT\_DIR=/directory/this/saved/rrna\_results
+### Glenn
+#!/bin/bash
+#SBATCH -N 1
+#SBATCH -n 8
+#SBATCH -p atlas
+#SBATCH --mem=100GB
+#SBATCH -J rrna_glenn
+#SBATCH -A genolabswheatphg
 
-OUTPUT\_FILE=${OUTPUT\_DIR}/wheat\_rrna\_annotations.tbl
+ml hmmer/3.4
 
+QUERY_HMM=/90daydata/oat_renewal/Ruby/rnammer_envs/lib/euk.ssu.rnammer.hmm
+TARGET_FASTA=/90daydata/oat_renewal/Ruby/Glenn_pm_v1.fasta
+OUTPUT_DIR=/90daydata/oat_renewal/Ruby/rrna_results
+OUTPUT_FILE=${OUTPUT_DIR}/glenn_rrna_annotations.tbl
 
+mkdir -p ${OUTPUT_DIR}
 
-mkdir -p ${OUTPUT\_DIR}
+/apps/spack-managed/gcc-11.3.1/hmmer-3.4*/bin/nhmmer \
+  --tblout ${OUTPUT_FILE} \
+  --cpu 8 --dna \
+  ${QUERY_HMM} ${TARGET_FASTA}
 
+---
 
+## Post-Processing Commands
 
-/apps/spack-managed/gcc-11.3.1/hmmer-3.4\*/bin/nhmmer \\
+# Count total rRNAs
+grep -c "euk.ssu.rnammer.degap" sumai3_rrna_annotations.tbl
 
-&nbsp; --tblout ${OUTPUT\_FILE} \\
+# Count rRNAs per chromosome
+awk '{count[$1]++} END {for (chr in count) print chr, count[chr]}' sumai3_rrna_annotations.tbl
 
-&nbsp; --cpu 8 --dna \\
+---
 
-&nbsp; ${QUERY\_HMM} ${TARGET\_FASTA}
-
-```
-
-
-
-\## Post-Processing
-
-```bash
-
-\# 1. Count total rRNAs:
-
-grep -c "euk.ssu.rnammer.degap" sumai3\_rrna\_annotations.tbl
-
-
-
-\# 2. Count rRNAs per chromosome:
-
-awk '{count\[$1]++} END {for (chr in count) print chr, count\[chr]}' sumai3\_rrna\_annotations.tbl
-
-```
-
-
-
-Maintainer:
-
-
-
+**Maintainer:**  
 Ruby Mijan
-
-
-
-
-
-
-
