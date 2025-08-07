@@ -14,7 +14,7 @@ scp ~/Downloads/rnammer-1.2.Unix.tar.gz your_username@atlas-login.hpc.msstate.ed
 ```
 3. **Extract the archive**:
 ```bash
-tar -xzf rnammer-1.2.Unix.tar.gz
+tar -xzvf rnammer-1.2.Unix.tar.gz
 ```
 4. **Edit the rnammer script to update install path**:
 ```bash
